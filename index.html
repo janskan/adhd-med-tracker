@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Med Tracker">
+<meta name="theme-color" content="#2D2A26">
+<title>Med Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💊</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE3 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: #2D2A26;
+  -webkit-font-smoothing: antialiased;
+}
+.header {
+  padding: 44px 20px 14px;
+  background: linear-gradient(135deg, #2D2A26 0%, #3D3832 100%);
+  color: #FAF7F2;
+}
+.header h1 { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+.header p { font-size: 13px; opacity: 0.55; margin-top: 3px; }
+.tabs {
+  display: flex; background: #2D2A26; padding: 0 16px 12px; gap: 4px;
+}
+.tab-btn {
+  flex: 1; padding: 8px 0; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  background: transparent; color: rgba(250,247,242,0.45);
+  transition: all 0.2s;
+}
+.tab-btn.active { background: #FAF7F2; color: #2D2A26; }
+.content { padding: 16px 16px 90px; max-width: 480px; margin: 0 auto; }
+.card {
+  background: #fff; border-radius: 14px; padding: 16px 18px;
+  margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.cat-title {
+  margin: 0 0 14px; font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.slider-row { margin-bottom: 18px; }
+.slider-label {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+}
+.slider-label span { font-size: 14px; }
+.slider-label .inv-hint { font-size: 11px; opacity: 0.45; margin-left: 4px; }
+.slider-val {
+  font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700;
+  min-width: 28px; text-align: right; transition: color 0.15s;
+}
+.slider-track { position: relative; height: 28px; display: flex; align-items: center; }
+.track-bg {
+  position: absolute; left: 0; right: 0; height: 6px; border-radius: 3px;
+  background: #E8E4DF;
+}
+.track-fill {
+  position: absolute; left: 0; height: 6px; border-radius: 3px;
+  transition: width 0.15s, background 0.15s;
+}
+.track-thumb {
+  position: absolute; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; border-width: 3px; border-style: solid;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  transition: left 0.15s, border-color 0.15s;
+  pointer-events: none;
+}
+.slider-track input[type=range] {
+  position: absolute; left: 0; right: 0; width: 100%;
+  height: 28px; opacity: 0; cursor: pointer; margin: 0; z-index: 2;
+}
+label.field-label { font-size: 13px; display: block; margin-bottom: 4px; }
+input[type=time], textarea {
+  width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #ddd;
+  font-size: 14px; margin-bottom: 12px; font-family: 'DM Sans', sans-serif;
+}
+input[type=time] { font-family: 'Space Mono', monospace; }
+textarea { resize: vertical; }
+.checkbox-row {
+  display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer;
+}
+.checkbox-row input { width: 18px; height: 18px; }
+.save-btn {
+  width: 100%; padding: 14px 0; border: none; border-radius: 12px;
+  background: #2D2A26; color: #FAF7F2; font-size: 16px; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: opacity 0.2s;
+}
+.save-btn:active { opacity: 0.7; }
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #2D2A26; color: #FAF7F2; padding: 10px 24px; border-radius: 10px;
+  font-size: 14px; font-weight: 600; z-index: 99; opacity: 0;
+  transition: opacity 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.date-meta {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+}
+.date-meta span { font-size: 13px; opacity: 0.5; font-family: 'Space Mono', monospace; }
+.date-meta .counter { font-size: 12px; opacity: 0.4; font-family: 'DM Sans', sans-serif; }
+.history-entry { margin-bottom: 10px; }
+.history-date { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px; }
+.history-tags { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; margin-top: 8px; }
+.history-tag { padding: 3px 8px; border-radius: 6px; font-weight: 600; }
+.history-note { font-size: 12px; margin-top: 6px; opacity: 0.55; }
+.trend-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 6px 0; border-bottom: 1px solid #f0ede8;
+}
+.trend-row:last-child { border-bottom: none; }
+.trend-label { font-size: 13px; }
+.empty { text-align: center; opacity: 0.4; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💊 Med Tracker</h1>
+  <p>F90 · F32.1 — denní check-in</p>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="checkin">Check-in</button>
+  <button class="tab-btn" data-tab="history">Historie</button>
+  <button class="tab-btn" data-tab="trends">Trendy</button>
+</div>
+
+<div class="content" id="app"></div>
+<div class="toast" id="toast">✅ Uloženo!</div>
+
+<script>
+const CATEGORIES = [
+  {
+    label: "ADHD (F90)", color: "#E8A838", bg: "#FFF8ED",
+    items: [
+      { key: "focus", label: "Soustředění", emoji: "🎯" },
+      { key: "taskStart", label: "Schopnost činnost začít", emoji: "🏁" },
+      { key: "taskPersist", label: "Schopnost u činnosti vydržet", emoji: "⏳" },
+      { key: "taskFinish", label: "Schopnost činnost dokončit", emoji: "✅" },
+      { key: "impulsivity", label: "Impulzivita", emoji: "⚡", inverted: true },
+      { key: "organization", label: "Organizace & plánování", emoji: "📋" },
+      { key: "restlessness", label: "Vnitřní neklid", emoji: "🌀", inverted: true },
+      { key: "procrastination", label: "Prokrastinace", emoji: "🐌", inverted: true },
+    ],
+  },
+  {
+    label: "Deprese (F32.1)", color: "#6B8FD4", bg: "#EDF2FC",
+    items: [
+      { key: "mood", label: "Nálada", emoji: "🌤" },
+      { key: "energy", label: "Energie", emoji: "🔋" },
+      { key: "motivation", label: "Motivace", emoji: "🚀" },
+      { key: "sleep", label: "Kvalita spánku", emoji: "😴" },
+      { key: "joy", label: "Schopnost radosti", emoji: "🌈" },
+      { key: "selfCriticism", label: "Sebekritika", emoji: "🪞", inverted: true },
+    ],
+  },
+  {
+    label: "Průřezové", color: "#9B72B0", bg: "#F5EFF8",
+    items: [
+      { key: "anxiety", label: "Úzkost / napětí", emoji: "😰", inverted: true },
+      { key: "appetite", label: "Chuť k jídlu", emoji: "🍽" },
+      { key: "social", label: "Sociální fungování", emoji: "👥" },
+      { key: "emotionalReactivity", label: "Emoční reaktivita", emoji: "🌊", inverted: true },
+      { key: "overallDay", label: "Celkový dojem z dne", emoji: "⭐" },
+    ],
+  },
+];
+
+const ALL_KEYS = CATEGORIES.flatMap(c => c.items.map(i => i.key));
+
+function getToday() { return new Date().toISOString().slice(0, 10); }
+function loadEntries() { try { return JSON.parse(localStorage.getItem("mt-entries") || "{}"); } catch { return {}; } }
+function saveEntries(e) { localStorage.setItem("mt-entries", JSON.stringify(e)); }
+
+let state = { tab: "checkin", values: {}, sideEffects: "", medTime: "", notes: "", cycle: false };
+
+// Load today's draft
+try {
+  const d = JSON.parse(localStorage.getItem("mt-draft-" + getToday()) || "null");
+  if (d) { state.values = d.values || {}; state.sideEffects = d.sideEffects || ""; state.medTime = d.medTime || ""; state.notes = d.notes || ""; state.cycle = d.cycle || false; }
+} catch {}
+
+function sliderColor(val, inverted) {
+  const v = inverted ? 11 - val : val;
+  if (v <= 3) return "#E05858";
+  if (v <= 5) return "#E8A838";
+  if (v <= 7) return "#6BBF6B";
+  return "#3AAF3A";
+}
+
+function sparklineSVG(data, color) {
+  if (!data || data.length < 2) return "";
+  const W = 110, H = 32;
+  const mn = Math.min(...data), mx = Math.max(...data), rng = mx - mn || 1;
+  const pts = data.map((v, i) => `${(i/(data.length-1))*W},`).join(" ");
+  return `<svg width="" height="" style="display:block"><polyline points="" fill="none" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function renderCheckin() {
+  const filled = Object.keys(state.values).length;
+  let h = `<div class="date-meta"><span></span><span class="counter">/ vyplněno</span></div>`;
+
+  CATEGORIES.forEach(cat => {
+    h += `<div class="card" style="border:1px solid 22">`;
+    h += `<h3 class="cat-title" style="color:"></h3>`;
+    cat.items.forEach(item => {
+      const v = state.values[item.key] ?? 5;
+      const pct = ((v-1)/9)*100;
+      const col = sliderColor(v, item.inverted);
+      h += `<div class="slider-row">
+        <div class="slider-label">
+          <span>  ''</span>
+          <span class="slider-val" style="color:"></span>
+        </div>
+        <div class="slider-track">
+          <div class="track-bg"></div>
+          <div class="track-fill" style="width:%;background:"></div>
+          <div class="track-thumb" style="left:calc(% - 10px);border-color:"></div>
+          <input type="range" min="1" max="10" value="" data-key="">
+        </div>
+      </div>`;
+    });
+    h += `</div>`;
+  });
+
+  h += `<div class="card">
+    <h3 class="cat-title" style="color:#888">Doplňkové</h3>
+    <label class="field-label">⏰ Čas užití léku</label>
+    <input type="time" id="medTime" value="">
+    <label class="field-label">💊 Vedlejší účinky</label>
+    <textarea id="sideEffects" rows="2" placeholder="sucho v ústech, bolest hlavy..."></textarea>
+
+```
+<label class="field-label">📝 Poznámky</label>
+<textarea id="notes" rows="2" placeholder="stres v práci, špatná noc..."></textarea>
+<label class="checkbox-row"><input type="checkbox" id="cycle"  ""> 🔴 Menstruace</label>
+```
+
+  </div>`;
+
+h += `<button class="save-btn" id="saveBtn">💾 Uložit záznam</button>`;
+return h;
+}
+
+function renderHistory() {
+const entries = loadEntries();
+const dates = Object.keys(entries).sort().reverse();
+if (!dates.length) return `<p class="empty">Zatím žádné záznamy</p>`;
+
+return dates.map(d => {
+const e = entries[d];
+let tags = CATEGORIES.map(cat => {
+const vals = cat.items.map(i => e.values?.[i.key]).filter(v => v != null);
+if (!vals.length) return “”;
+const avg = (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1);
+return `<span class="history-tag" style="background:;color:">: </span>`;
+}).join(””);
+let extra = “”;
+if (e.sideEffects) extra += `<div class="history-note">💊 </div>`;
+if (e.notes) extra += `<div class="history-note">📝 </div>`;
+return `<div class="card history-entry"> <div style="display:flex;justify-content:space-between;align-items:center"> <span class="history-date"></span> '' </div> <div class="history-tags"></div> </div>`;
+}).join(””);
+}
+
+function renderTrends() {
+const entries = loadEntries();
+const dates = Object.keys(entries).sort().slice(-14);
+if (dates.length < 2) return `<p class="empty">Potřebuji alespoň 2 záznamy</p>`;
+
+return CATEGORIES.map(cat => {
+let rows = cat.items.map(item => {
+const data = dates.map(d => entries[d]?.values?.[item.key] ?? null).filter(v => v !== null);
+return `<div class="trend-row"><span class="trend-label"> </span></div>`;
+}).join(””);
+return `<div class="card" style="border:1px solid 22"><h3 class="cat-title" style="color:"></h3></div>`;
+}).join(””);
+}
+
+function render() {
+const app = document.getElementById(“app”);
+if (state.tab === “checkin”) app.innerHTML = renderCheckin();
+else if (state.tab === “history”) app.innerHTML = renderHistory();
+else app.innerHTML = renderTrends();
+bindEvents();
+}
+
+function bindEvents() {
+document.querySelectorAll(‘input[type=range]’).forEach(el => {
+el.addEventListener(“input”, e => {
+state.values[e.target.dataset.key] = +e.target.value;
+saveDraft();
+render();
+});
+});
+const mt = document.getElementById(“medTime”);
+if (mt) mt.addEventListener(“change”, e => { state.medTime = e.target.value; saveDraft(); });
+const se = document.getElementById(“sideEffects”);
+if (se) se.addEventListener(“input”, e => { state.sideEffects = e.target.value; saveDraft(); });
+const nt = document.getElementById(“notes”);
+if (nt) nt.addEventListener(“input”, e => { state.notes = e.target.value; saveDraft(); });
+const cy = document.getElementById(“cycle”);
+if (cy) cy.addEventListener(“change”, e => { state.cycle = e.target.checked; saveDraft(); });
+const sb = document.getElementById(“saveBtn”);
+if (sb) sb.addEventListener(“click”, saveEntry);
+}
+
+function saveDraft() {
+localStorage.setItem(“mt-draft-” + getToday(), JSON.stringify(state));
+}
+
+function saveEntry() {
+const entries = loadEntries();
+entries[getToday()] = { values: state.values, sideEffects: state.sideEffects, medTime: state.medTime, notes: state.notes, cycle: state.cycle, date: getToday() };
+saveEntries(entries);
+const toast = document.getElementById(“toast”);
+toast.classList.add(“show”);
+setTimeout(() => toast.classList.remove(“show”), 1500);
+}
+
+// Tab switching
+document.querySelectorAll(”.tab-btn”).forEach(btn => {
+btn.addEventListener(“click”, () => {
+document.querySelectorAll(”.tab-btn”).forEach(b => b.classList.remove(“active”));
+btn.classList.add(“active”);
+state.tab = btn.dataset.tab;
+render();
+});
+});
+
+render();
+</script>
+
+</body>
+</html>
